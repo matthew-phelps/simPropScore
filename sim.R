@@ -67,6 +67,6 @@ x
 print(x)
 summary(x,
         estimate = c('A'),
-        true = c(exp(0))
+        true = exp(0))
 density(x)
 
