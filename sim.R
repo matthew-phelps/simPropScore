@@ -3,7 +3,8 @@ rm(list = ls())
 library(lava)
 library(survival)
 library(prodlim)
-
+library(riskRegression)
+source("load-functions.R")
 # CREATE LVM OBJECT -------------------------------------------------------
 # age is std norm dist. Will set dist for sex later
 m <- lvm(A ~ age + sex)
@@ -44,12 +45,28 @@ plot(prodlim(Surv(time, status) ~ A, data = x))
 # FUNCTION ----------------------------------------------------------------
 
 run <- function(..., n = 1000) {
-  # takes lvm object "m"
+  # takes lvm object "m"\
+  # browser()
   d <- simulate(m, n = n)
-  f <- coxph(Surv(time, status) ~ A + age + sex , data = d)
-  structure(c(exp(coef(f)["A"]),
-              exp(coef(f)["age"]),
-              exp(coef(f)["sex"])),
-            names = c("A", "age", "sex"))
+  setDT(d)
+  ps.fit <- glm(A~age+sex,data=d, family = binomial)
+  ps.score <- predictRisk(ps.fit,newdata=d)
+  matched.x <- match.nn(A=d$A,dt=d,ps=ps.score, M=1)
+  f <- coxph(Surv(time,status)~A,data=matched.x)
+  summary(f)
+  structure(exp(coef(f)["A"]),
+            names = c("A"))
 }
-run()
+x <- run()
+x
+
+
+x <- sim(run, 100)
+x
+
+print(x)
+summary(x,
+        estimate = c('A'),
+        true = c(exp(0))
+density(x)
+
