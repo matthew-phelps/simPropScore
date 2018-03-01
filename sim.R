@@ -1,9 +1,7 @@
 # Propensity score matching simulation
 rm(list = ls())
-library(lava)
-library(survival)
-library(prodlim)
-library(riskRegression)
+pkgs <- c('lava', 'survival', 'prodlim', 'riskRegression')
+lapply(pkgs, library, character.only = TRUE)
 source("load-functions.R")
 # CREATE LVM OBJECT -------------------------------------------------------
 # age is std norm dist. Will set dist for sex later
@@ -57,16 +55,20 @@ run <- function(..., n = 1000) {
   structure(exp(coef(f)["A"]),
             names = c("A"))
 }
-x <- run()
-x
 
 
-x <- sim(run, 100)
-x
+# RUN FUNCTION ------------------------------------------------------------
 
-print(x)
-summary(x,
+run_out <- run()
+run_out
+
+# Run 10 itr
+run_10 <- sim(run, 10)
+run_10
+
+print(run_10)
+summary(run_10,
         estimate = c('A'),
         true = exp(0))
-density(x)
+density(run_10)
 
